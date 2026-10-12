@@ -37,6 +37,8 @@ Abyss-guiutils is a fork of [hyprland-guiutils](https://github.com/hyprwm/hyprla
 | [Xdg-desktop-portal-abyss](https://github.com/AbyssWM/Xdg-desktop-portal-abyss) | [xdg-desktop-portal-hyprland](https://github.com/hyprwm/xdg-desktop-portal-hyprland) |
 | [Abysstoolkit](https://github.com/AbyssWM/Abysstoolkit) | [hyprtoolkit](https://github.com/hyprwm/hyprtoolkit) |
 | **Abyss-guiutils** | [hyprland-guiutils](https://github.com/hyprwm/hyprland-guiutils) |
+| [AbyssDusk](https://github.com/AbyssWM/AbyssDusk) | [hyprsunset](https://github.com/hyprwm/hyprsunset) |
+| [AbyssPicker](https://github.com/AbyssWM/AbyssPicker) | [hyprpicker](https://github.com/hyprwm/hyprpicker) |
 
 ## Credits
 
