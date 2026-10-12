@@ -24,7 +24,7 @@ protocols/*.cpp
 
 .cache/
 
-hyprctl/hyprctl
+abyssctl/abyssctl
 
 gmon.out
 *.out

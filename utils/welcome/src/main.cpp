@@ -1,19 +1,19 @@
-#include <hyprtoolkit/core/Backend.hpp>
-#include <hyprtoolkit/window/Window.hpp>
-#include <hyprtoolkit/element/Rectangle.hpp>
-#include <hyprtoolkit/element/RowLayout.hpp>
-#include <hyprtoolkit/element/ColumnLayout.hpp>
-#include <hyprtoolkit/element/Text.hpp>
-#include <hyprtoolkit/element/Image.hpp>
-#include <hyprtoolkit/element/Button.hpp>
-#include <hyprtoolkit/element/Null.hpp>
-#include <hyprtoolkit/element/Combobox.hpp>
+#include <abysstoolkit/core/Backend.hpp>
+#include <abysstoolkit/window/Window.hpp>
+#include <abysstoolkit/element/Rectangle.hpp>
+#include <abysstoolkit/element/RowLayout.hpp>
+#include <abysstoolkit/element/ColumnLayout.hpp>
+#include <abysstoolkit/element/Text.hpp>
+#include <abysstoolkit/element/Image.hpp>
+#include <abysstoolkit/element/Button.hpp>
+#include <abysstoolkit/element/Null.hpp>
+#include <abysstoolkit/element/Combobox.hpp>
 
-#include <hyprutils/memory/SharedPtr.hpp>
-#include <hyprutils/memory/UniquePtr.hpp>
-#include <hyprutils/string/VarList.hpp>
-#include <hyprutils/string/String.hpp>
-#include <hyprutils/os/Process.hpp>
+#include <abyssutils/memory/SharedPtr.hpp>
+#include <abyssutils/memory/UniquePtr.hpp>
+#include <abyssutils/string/VarList.hpp>
+#include <abyssutils/string/String.hpp>
+#include <abyssutils/os/Process.hpp>
 
 #include <print>
 #include <ranges>
@@ -22,11 +22,11 @@
 #include <filesystem>
 #include <optional>
 
-using namespace Hyprutils::Memory;
-using namespace Hyprutils::Math;
-using namespace Hyprutils::String;
-using namespace Hyprutils::OS;
-using namespace Hyprtoolkit;
+using namespace Abyssutils::Memory;
+using namespace Abyssutils::Math;
+using namespace Abyssutils::String;
+using namespace Abyssutils::OS;
+using namespace Abysstoolkit;
 using namespace std::string_literals;
 
 #define SP  CSharedPointer
@@ -38,7 +38,7 @@ constexpr const size_t                         TABS_NUMBER       = 6;
 constexpr const size_t                         INNER_NULL_MARGIN = 5;
 
 constexpr std::array<const char*, TABS_NUMBER> TITLES = {
-    "Welcome to Hyprland!", "Getting started", "Default apps", "Basic configuration", "Hypr Ecosystem", "That's it!",
+    "Welcome to Abyssland!", "Getting started", "Default apps", "Basic configuration", "Abyss Ecosystem", "That's it!",
 };
 
 const std::vector<const char*> TERMINALS = {
@@ -47,14 +47,14 @@ const std::vector<const char*> TERMINALS = {
 
 const std::vector<const char*> FILE_MANAGERS = {"dolphin", "thunar", "pcmanfm", "nautilus", "nemo"};
 
-const std::vector<const char*> LAUNCHERS = {"hyprlauncher", "fuzzel", "wofi", "rofi -show run", "anyrun", "tofi-drun --drun-launch=true"};
+const std::vector<const char*> LAUNCHERS = {"abysslauncher", "fuzzel", "wofi", "rofi -show run", "anyrun", "tofi-drun --drun-launch=true"};
 
 constexpr const char*          TAB1_CONTENT =
-    R"#(We hope you enjoy your stay. In order to help you get accommodated to Hyprland in an easier manner, we prepared a little basic setup tutorial, just for you.
+    R"#(We hope you enjoy your stay. In order to help you get accommodated to Abyssland in an easier manner, we prepared a little basic setup tutorial, just for you.
 
 If you feel adventurous, or are an advanced user, you can click the "Thanks, but I don't need help" button on the bottom. It will close this window and never show it again.
 
-If you want to manually launch this welcome app, just execute hyprland-welcome in your terminal.
+If you want to manually launch this welcome app, just execute abyssland-welcome in your terminal.
 
 Click the "next" button to proceed to the next step of your setup :)
 )#";
@@ -67,23 +67,23 @@ You can proceed without any of those, but it's not advised.
 There is a possibility that this app is unable to detect some of your installed binaries. In that case, it's okay to ignore them.
 
 Use the <i>launch terminal</i> button to launch a terminal.
-Use SUPER+M to exit hyprland.
+Use SUPER+M to exit abyssland.
 Supported terminals: kitty, alacritty, foot, wezterm, konsole, gnome-terminal, xterm.
 
 <i>Hint: Hover on the different components to see what options are accepted. <span foreground="#22cc22">Green</span> means the component is found to be installed, <span foreground="#22cccc">blue</span> means it's running.
 This list refreshes automatically.</i>)#";
 
 constexpr const char* TAB4_CONTENT =
-    R"#(Now that you've installed the basic apps, you might want some of them to autostart. Hyprland doesn't automatically start anything for you, you need to tell it to.
-Go to ~/.config/hypr/hyprland.lua, and add "hl.exec_cmd("appname")" surrounded by hl.on() to launch your apps, for example:
-hl.on("hyprland.start", function ()
-    hl.exec_cmd("hyprpaper")
+    R"#(Now that you've installed the basic apps, you might want some of them to autostart. Abyssland doesn't automatically start anything for you, you need to tell it to.
+Go to ~/.config/abyss/abyssland.lua, and add "hl.exec_cmd("appname")" surrounded by hl.on() to launch your apps, for example:
+hl.on("abyssland.start", function ()
+    hl.exec_cmd("abysspaper")
     hl.exec_cmd("waybar")
 end)
 
 In general, configuring apps is something for you to do. Each app you install may come with its own config file and options.
 
-A great point to start is the Hyprland wiki at https://wiki.hypr.land. There, the master tutorial will teach you everything and link to further docs.
+A great point to start is the Abyssland wiki at https://github.com/AbyssWM/Abyssland There, the master tutorial will teach you everything and link to further docs.
 
 If you prefer pre-configured settings, or "dotfiles", you can see the "preconfigured configs" section on the wiki, or search online. <span foreground="#cc2222">Important note:</span> dotfiles can run <i>anything</i> on your computer. Make sure you trust the source.)#";
 
@@ -92,12 +92,12 @@ constexpr const char* TAB3_PREAMBLE =
 If you wish to change the defaults, use the dropdowns below.)#";
 
 constexpr const char* TAB5_CONTENT =
-    R"#(Hyprland has a wide ecosystem of apps specifically made for it.
+    R"#(Abyssland has a wide ecosystem of apps specifically made for it.
 Unlike some other popular DEs, it does not force you to use most of them by default.
 
 You can install those elements separately, only those that you need.
 
-Check the wiki under Hypr Ecosystem to see all of the apps, their usage and configuration.)#";
+Check the wiki under Abyss Ecosystem to see all of the apps, their usage and configuration.)#";
 
 constexpr const char* TAB6_CONTENT =
     R"#(That's it for this small introduction! Explore the wiki, and various apps, and enjoy your journey!
@@ -108,14 +108,14 @@ Here are some important default shortcuts:
 • SUPER + R <span foreground="#666666">=</span> Launcher
 • SUPER + C <span foreground="#666666">=</span> Close window
 • SUPER + V <span foreground="#666666">=</span> Toggle floating
-• SUPER + M <span foreground="#666666">=</span> Exit Hyprland
+• SUPER + M <span foreground="#666666">=</span> Exit Abyssland
 • SUPER + [1 - 9] <span foreground="#666666">=</span> Workspaces 1 - 9
 • SUPER + SHIFT + [1 - 9] <span foreground="#666666">=</span> Move window to workspace 1 - 9
 • SUPER + Arrows <span foreground="#666666">=</span> Move focus around
 
-<i>You can easily change these in your hyprland.lua.</i>
+<i>You can easily change these in your abyssland.lua.</i>
     
-Thank you for choosing Hyprland! ❤️)#";
+Thank you for choosing Abyssland! ❤️)#";
 
 struct SAppState {
     std::string              name;
@@ -302,7 +302,7 @@ static void registerAppState(std::string&& name, std::vector<std::string>&& bina
     state.appStates.emplace_back(std::move(appState));
 }
 
-static SP<Hyprtoolkit::CRowLayoutElement> spaceOut(std::string&& label, SP<IElement> el) {
+static SP<Abysstoolkit::CRowLayoutElement> spaceOut(std::string&& label, SP<IElement> el) {
     auto text   = CTextBuilder::begin()->text(std::move(label))->commence();
     auto spacer = CNullBuilder::begin()->commence();
     spacer->setGrow(true, false);
@@ -326,12 +326,12 @@ static std::optional<std::string> readFileAsString(const std::string& path) {
     return std::string((std::istreambuf_iterator<char>(file)), (std::istreambuf_iterator<char>()));
 }
 
-static std::optional<std::filesystem::path> getHyprlandLuaConfigPath() {
+static std::optional<std::filesystem::path> getAbysslandLuaConfigPath() {
     if (const auto XDG_CONFIG_HOME = getenv("XDG_CONFIG_HOME"); XDG_CONFIG_HOME && XDG_CONFIG_HOME[0] != '\0')
-        return std::filesystem::path{XDG_CONFIG_HOME} / "hypr" / "hyprland.lua";
+        return std::filesystem::path{XDG_CONFIG_HOME} / "abyss" / "abyssland.lua";
 
     if (const auto HOME = getenv("HOME"); HOME && HOME[0] != '\0')
-        return std::filesystem::path{HOME} / ".config" / "hypr" / "hyprland.lua";
+        return std::filesystem::path{HOME} / ".config" / "abyss" / "abyssland.lua";
 
     return std::nullopt;
 }
@@ -447,7 +447,7 @@ static std::optional<std::pair<size_t, size_t>> findLuaAutogeneratedLine(const s
 }
 
 static std::optional<std::string> updateDefaultConfigVar(const std::string_view& var, const char* newValue) {
-    const auto PATH = getHyprlandLuaConfigPath();
+    const auto PATH = getAbysslandLuaConfigPath();
     if (!PATH)
         return "Can't save: neither $XDG_CONFIG_HOME nor $HOME env is set";
 
@@ -478,7 +478,7 @@ static std::optional<std::string> updateDefaultConfigVar(const std::string_view&
 }
 
 static void removeAutogen() {
-    const auto PATH = getHyprlandLuaConfigPath();
+    const auto PATH = getAbysslandLuaConfigPath();
     if (!PATH)
         return;
 
@@ -531,18 +531,18 @@ static void initTabs() {
         nullEl->setGrow(true);
         nullEl->setMargin(INNER_NULL_MARGIN);
 
-        auto appLayoutParent = CRowLayoutBuilder::begin()->size(CDynamicSize{CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {1, 1}})->commence();
+        auto appLayoutParent = CRowLayoutBuilder::begin()->size(CDynamicSize{CDynamicSize::HT_SIZE_PERCENT, Abysstoolkit::CDynamicSize::HT_SIZE_AUTO, {1, 1}})->commence();
         SP<CColumnLayoutElement> appLayouts[2] = {
-            CColumnLayoutBuilder::begin()->gap(4)->size(CDynamicSize{CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {0.5F, 1.F}})->commence(),
-            CColumnLayoutBuilder::begin()->gap(4)->size(CDynamicSize{CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {0.5F, 1.F}})->commence(),
+            CColumnLayoutBuilder::begin()->gap(4)->size(CDynamicSize{CDynamicSize::HT_SIZE_PERCENT, Abysstoolkit::CDynamicSize::HT_SIZE_AUTO, {0.5F, 1.F}})->commence(),
+            CColumnLayoutBuilder::begin()->gap(4)->size(CDynamicSize{CDynamicSize::HT_SIZE_PERCENT, Abysstoolkit::CDynamicSize::HT_SIZE_AUTO, {0.5F, 1.F}})->commence(),
         };
 
         appLayouts[0]->setGrow(false, true);
-        appLayouts[0]->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-        appLayouts[0]->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_LEFT, true);
+        appLayouts[0]->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+        appLayouts[0]->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_LEFT, true);
         appLayouts[1]->setGrow(false, true);
-        appLayouts[1]->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-        appLayouts[1]->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_LEFT, true);
+        appLayouts[1]->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+        appLayouts[1]->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_LEFT, true);
 
         appLayoutParent->addChild(appLayouts[0]);
         appLayoutParent->addChild(appLayouts[1]);
@@ -550,15 +550,15 @@ static void initTabs() {
         layout->addChild(appLayoutParent);
 
         // app states
-        registerAppState("Authentication agent", {"hyprpolkitagent", "polkit-kde-agent"}, true, "hyprpolkitagent");
+        registerAppState("Authentication agent", {"abysspolkitagent", "polkit-kde-agent"}, true, "abysspolkitagent");
         registerAppState("File manager", {"dolphin", "ranger", "thunar", "pcmanfm", "nautilus", "nemo", "nnn", "yazi"}, true);
         registerAppState("Terminal", {"kitty", "alacritty", "wezterm", "foot", "konsole", "gnome-terminal"}, true, "kitty");
         registerAppState("Pipewire", {"pipewire", "wireplumber"}, true);
-        registerAppState("Wallpaper", {"hyprpaper", "swww", "awww", "swaybg", "wpaperd"}, false, "hyprpaper");
-        registerAppState("XDG Desktop Portal", {"xdg-desktop-portal-hyprland"}, true);
+        registerAppState("Wallpaper", {"abysspaper", "swww", "awww", "swaybg", "wpaperd"}, false, "abysspaper");
+        registerAppState("XDG Desktop Portal", {"xdg-desktop-portal-abyss"}, true);
         registerAppState("Notification Daemon", {"dunst", "mako"}, true, "", "Please note you can have custom notification daemons with your shell, e.g. quickshell.");
         registerAppState("Status bar / shell", {"quickshell", "waybar", "eww", "ags"}, false, "", "For new users we recommend waybar, for advanced users quickshell.");
-        registerAppState("Application launcher", {"hyprlauncher", "fuzzel", "wofi", "rofi", "anyrun", "walker", "tofi"}, false, "hyprlauncher");
+        registerAppState("Application launcher", {"abysslauncher", "fuzzel", "wofi", "rofi", "anyrun", "walker", "tofi"}, false, "abysslauncher");
         registerAppState("Clipboard", {"wl-copy"}, true, "", "wl-copy is provided by wl-clipboard in most distros.");
 
         // register them
@@ -589,11 +589,11 @@ static void initTabs() {
         auto defaultContainer = CNullBuilder::begin()->size({CDynamicSize::HT_SIZE_PERCENT, CDynamicSize::HT_SIZE_AUTO, {0.6F, 1.F}})->commence();
         auto defaultLayout    = CColumnLayoutBuilder::begin()->size({CDynamicSize::HT_SIZE_PERCENT, CDynamicSize::HT_SIZE_AUTO, {1, 1}})->gap(4)->commence();
         spacer->setGrow(true);
-        hr->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-        hr->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
+        hr->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+        hr->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
         hr->setMargin(5);
-        hr2->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-        hr2->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
+        hr2->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+        hr2->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
         hr2->setMargin(5);
 
         auto addSelector = [&](const char* name, const char* label, const auto& arr) {
@@ -605,8 +605,8 @@ static void initTabs() {
             for (const auto& t : arr) {
                 strs.emplace_back(t);
             }
-            text->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-            text->setPositionFlag(sc<Hyprtoolkit::IElement::ePositionFlag>(Hyprtoolkit::IElement::HT_POSITION_FLAG_VCENTER | Hyprtoolkit::IElement::HT_POSITION_FLAG_RIGHT), true);
+            text->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+            text->setPositionFlag(sc<Abysstoolkit::IElement::ePositionFlag>(Abysstoolkit::IElement::HT_POSITION_FLAG_VCENTER | Abysstoolkit::IElement::HT_POSITION_FLAG_RIGHT), true);
 
             auto updateText = [](SP<CTextElement> textEl, const std::string_view& app, std::string err = "") -> void {
                 if (!err.empty()) {
@@ -651,7 +651,7 @@ static void initTabs() {
         layout->addChild(defaultContainer);
         layout->addChild(hr);
         layout->addChild(CTextBuilder::begin()
-                             ->text("<i>You can always change these later in your hyprland.lua</i>")
+                             ->text("<i>You can always change these later in your abyssland.lua</i>")
                              ->color([] { return state.backend->getPalette()->m_colors.text; })
                              ->commence());
         layout->addChild(spacer);
@@ -716,7 +716,7 @@ int main(int argc, char** argv, char** envp) {
         std::string_view arg = argv[i];
 
         if (arg == "--help" || arg == "-h") {
-            std::println(R"#(hyprland-welcome, part of hyprland-guiutils v{})#", GUIUTILS_VERSION);
+            std::println(R"#(abyssland-welcome, part of abyss-guiutils v{})#", GUIUTILS_VERSION);
             return 0;
         }
 
@@ -731,7 +731,7 @@ int main(int argc, char** argv, char** envp) {
 
     //
     auto window =
-        CWindowBuilder::begin()->preferredSize(WINDOW_SIZE)->minSize(WINDOW_SIZE)->maxSize(WINDOW_SIZE)->appTitle("Welcome to Hyprland")->appClass("hyprland-welcome")->commence();
+        CWindowBuilder::begin()->preferredSize(WINDOW_SIZE)->minSize(WINDOW_SIZE)->maxSize(WINDOW_SIZE)->appTitle("Welcome to Abyssland")->appClass("abyssland-welcome")->commence();
 
     initTabs();
 
@@ -748,8 +748,8 @@ int main(int argc, char** argv, char** envp) {
     topNull->setMargin(4);
 
     state.topText = CTextBuilder::begin()->color([] { return state.backend->getPalette()->m_colors.text; })->text(TITLES[state.tab])->fontSize(CFontSize::HT_FONT_H2)->commence();
-    state.topText->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-    state.topText->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_CENTER, true);
+    state.topText->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+    state.topText->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_CENTER, true);
 
     topNull->addChild(state.topText);
     rootLayout->addChild(topNull);
@@ -804,7 +804,7 @@ int main(int argc, char** argv, char** envp) {
     state.buttonOpenWiki   = CButtonBuilder::begin()
                                  ->label("🔗 Open wiki")
                                  ->onMainClick([w = WP<IWindow>{window}](SP<CButtonElement> self) {
-                                   CProcess proc("xdg-open", {"https://wiki.hypr.land/"});
+                                   CProcess proc("xdg-open", {"https://github.com/AbyssWM/Abyssland"});
                                    proc.runAsync();
 
                                    state.buttonOpenWiki->rebuild()->label("🔗 Opened in your browser")->commence();

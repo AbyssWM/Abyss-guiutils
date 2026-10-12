@@ -1,31 +1,31 @@
-#include <hyprtoolkit/core/Backend.hpp>
-#include <hyprtoolkit/window/Window.hpp>
-#include <hyprtoolkit/element/Rectangle.hpp>
-#include <hyprtoolkit/element/RowLayout.hpp>
-#include <hyprtoolkit/element/ColumnLayout.hpp>
-#include <hyprtoolkit/element/Text.hpp>
-#include <hyprtoolkit/element/Image.hpp>
-#include <hyprtoolkit/element/Textbox.hpp>
-#include <hyprtoolkit/element/Button.hpp>
-#include <hyprtoolkit/element/Null.hpp>
+#include <abysstoolkit/core/Backend.hpp>
+#include <abysstoolkit/window/Window.hpp>
+#include <abysstoolkit/element/Rectangle.hpp>
+#include <abysstoolkit/element/RowLayout.hpp>
+#include <abysstoolkit/element/ColumnLayout.hpp>
+#include <abysstoolkit/element/Text.hpp>
+#include <abysstoolkit/element/Image.hpp>
+#include <abysstoolkit/element/Textbox.hpp>
+#include <abysstoolkit/element/Button.hpp>
+#include <abysstoolkit/element/Null.hpp>
 
-#include <hyprutils/memory/SharedPtr.hpp>
-#include <hyprutils/memory/UniquePtr.hpp>
-#include <hyprutils/string/ConstVarList.hpp>
-#include <hyprutils/string/String.hpp>
-#include <hyprutils/string/VarList2.hpp>
-#include <hyprutils/os/Process.hpp>
+#include <abyssutils/memory/SharedPtr.hpp>
+#include <abyssutils/memory/UniquePtr.hpp>
+#include <abyssutils/string/ConstVarList.hpp>
+#include <abyssutils/string/String.hpp>
+#include <abyssutils/string/VarList2.hpp>
+#include <abyssutils/os/Process.hpp>
 
 #include <filesystem>
 #include <print>
 #include <string_view>
 #include <xkbcommon/xkbcommon-keysyms.h>
 
-using namespace Hyprutils::Memory;
-using namespace Hyprutils::Math;
-using namespace Hyprutils::String;
-using namespace Hyprutils::OS;
-using namespace Hyprtoolkit;
+using namespace Abyssutils::Memory;
+using namespace Abyssutils::Math;
+using namespace Abyssutils::String;
+using namespace Abyssutils::OS;
+using namespace Abysstoolkit;
 
 #define SP CSharedPointer
 #define WP CWeakPointer
@@ -87,7 +87,7 @@ static bool tryRunApp() {
             state.errorText = CTextBuilder::begin()
                                   ->text(std::format("<i>{}</i>", RES.error()))
                                   ->fontSize(CFontSize{CFontSize::HT_FONT_TEXT})
-                                  ->color([] { return CHyprColor{0xFFEE2222}; })
+                                  ->color([] { return CAbyssColor{0xFFEE2222}; })
                                   ->commence();
             state.layoutInner->clearChildren();
             state.layoutInner->addChild(state.content);
@@ -107,7 +107,7 @@ int main(int argc, char** argv, char** envp) {
         std::string_view arg = argv[i];
 
         if (arg == "--help" || arg == "-h") {
-            std::println(R"#(hyprland-run, part of hyprland-guiutils v{})#", GUIUTILS_VERSION);
+            std::println(R"#(abyss-run, part of abyss-guiutils v{})#", GUIUTILS_VERSION);
             return 0;
         }
 
@@ -119,7 +119,7 @@ int main(int argc, char** argv, char** envp) {
 
     //
     const Vector2D WINDOW_SIZE = {350, 100};
-    auto           window = CWindowBuilder::begin()->preferredSize(WINDOW_SIZE)->minSize(WINDOW_SIZE)->maxSize(WINDOW_SIZE)->appTitle("Run")->appClass("hyprland-run")->commence();
+    auto           window = CWindowBuilder::begin()->preferredSize(WINDOW_SIZE)->minSize(WINDOW_SIZE)->maxSize(WINDOW_SIZE)->appTitle("Run")->appClass("abyss-run")->commence();
 
     window->m_rootElement->addChild(CRectangleBuilder::begin()->color([] { return backend->getPalette()->m_colors.background; })->commence());
 

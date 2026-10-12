@@ -1,26 +1,26 @@
-#include <hyprtoolkit/core/Backend.hpp>
-#include <hyprtoolkit/window/Window.hpp>
-#include <hyprtoolkit/element/Rectangle.hpp>
-#include <hyprtoolkit/element/RowLayout.hpp>
-#include <hyprtoolkit/element/ColumnLayout.hpp>
-#include <hyprtoolkit/element/Text.hpp>
-#include <hyprtoolkit/element/Image.hpp>
-#include <hyprtoolkit/element/Button.hpp>
-#include <hyprtoolkit/element/Null.hpp>
+#include <abysstoolkit/core/Backend.hpp>
+#include <abysstoolkit/window/Window.hpp>
+#include <abysstoolkit/element/Rectangle.hpp>
+#include <abysstoolkit/element/RowLayout.hpp>
+#include <abysstoolkit/element/ColumnLayout.hpp>
+#include <abysstoolkit/element/Text.hpp>
+#include <abysstoolkit/element/Image.hpp>
+#include <abysstoolkit/element/Button.hpp>
+#include <abysstoolkit/element/Null.hpp>
 
-#include <hyprutils/memory/SharedPtr.hpp>
-#include <hyprutils/memory/UniquePtr.hpp>
-#include <hyprutils/string/ConstVarList.hpp>
-#include <hyprutils/string/String.hpp>
-#include <hyprutils/os/Process.hpp>
+#include <abyssutils/memory/SharedPtr.hpp>
+#include <abyssutils/memory/UniquePtr.hpp>
+#include <abyssutils/string/ConstVarList.hpp>
+#include <abyssutils/string/String.hpp>
+#include <abyssutils/os/Process.hpp>
 
 #include <print>
 
-using namespace Hyprutils::Memory;
-using namespace Hyprutils::Math;
-using namespace Hyprutils::String;
-using namespace Hyprutils::OS;
-using namespace Hyprtoolkit;
+using namespace Abyssutils::Memory;
+using namespace Abyssutils::Math;
+using namespace Abyssutils::String;
+using namespace Abyssutils::OS;
+using namespace Abysstoolkit;
 
 #define SP CSharedPointer
 #define WP CWeakPointer
@@ -29,15 +29,15 @@ using namespace Hyprtoolkit;
 static SP<IBackend>       backend;
 static SP<CButtonElement> donateButton, openNewsButton;
 
-constexpr const char*     TEXT_CONTENT = R"#(Hyprland has been updated! 😄
+constexpr const char*     TEXT_CONTENT = R"#(Abyssland has been updated! 😄
 
-Check out the release notes on GitHub and the news page on hypr.land to see what's new.
+Check out the release notes on GitHub and the news page on abyss.land to see what's new.
 
 Some releases include breaking changes, so if you run into any config errors, the latest release notes are a good place to start.
 
 If you use plugins, make sure to rebuild them.
 
-<i>You can turn off this screen in your Hyprland config.</i>)#";
+<i>You can turn off this screen in your Abyssland config.</i>)#";
 
 //
 int main(int argc, char** argv, char** envp) {
@@ -60,7 +60,7 @@ int main(int argc, char** argv, char** envp) {
         }
 
         if (arg == "--help" || arg == "-h") {
-            std::println(R"#(hyprland-update-screen, part of hyprland-guiutils v{}
+            std::println(R"#(abyssland-update-screen, part of abyss-guiutils v{}
 Usage:
 --new-version                           - Set the displayed new version string
 )#",
@@ -83,8 +83,8 @@ Usage:
                             ->preferredSize(WINDOW_SIZE)
                             ->minSize(WINDOW_SIZE)
                             ->maxSize(WINDOW_SIZE)
-                            ->appTitle("Hyprland Updated")
-                            ->appClass("hyprland-donate-screen")
+                            ->appTitle("Abyssland Updated")
+                            ->appClass("abyssland-donate-screen")
                             ->commence();
 
     window->m_rootElement->addChild(CRectangleBuilder::begin()->color([] { return backend->getPalette()->m_colors.background; })->commence());
@@ -98,17 +98,17 @@ Usage:
 
     layout->addChild(layoutInner);
     layoutInner->setGrow(true);
-    layoutInner->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-    layoutInner->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
+    layoutInner->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+    layoutInner->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
 
     auto title = CTextBuilder::begin()
-                     ->text(std::move(std::format("Hyprland updated to {}!", versionStr)))
+                     ->text(std::move(std::format("Abyssland updated to {}!", versionStr)))
                      ->fontSize({CFontSize::HT_FONT_H2})
                      ->color([] { return backend->getPalette()->m_colors.text; })
                      ->commence();
 
     auto hr = CRectangleBuilder::begin() //
-                  ->color([] { return CHyprColor{backend->getPalette()->m_colors.text.darken(0.65)}; })
+                  ->color([] { return CAbyssColor{backend->getPalette()->m_colors.text.darken(0.65)}; })
                   ->size({CDynamicSize::HT_SIZE_PERCENT, CDynamicSize::HT_SIZE_ABSOLUTE, {0.5F, 9.F}})
                   ->commence();
 
@@ -117,11 +117,11 @@ Usage:
     auto content = CTextBuilder::begin()
                        ->text(TEXT_CONTENT)
                        ->fontSize(CFontSize{CFontSize::HT_FONT_TEXT})
-                       ->align(Hyprtoolkit::HT_FONT_ALIGN_CENTER)
+                       ->align(Abysstoolkit::HT_FONT_ALIGN_CENTER)
                        ->color([] { return backend->getPalette()->m_colors.text; })
                        ->commence();
 
-    content->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
+    content->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
 
     auto null2 = CNullBuilder::begin()->commence();
 
@@ -132,7 +132,7 @@ Usage:
                        ->onMainClick([w = WP<IWindow>{window}](auto) {
                            donateButton->rebuild()->label("💝 Thank you!")->commence();
 
-                           CProcess proc("xdg-open", {"https://hypr.land/support"});
+                           CProcess proc("xdg-open", {"https://github.com/AbyssWM"});
                            proc.runAsync();
                        })
                        ->size({CDynamicSize::HT_SIZE_AUTO, CDynamicSize::HT_SIZE_AUTO, {1, 1}})
@@ -143,7 +143,7 @@ Usage:
                          ->onMainClick([w = WP<IWindow>{window}](auto) {
                              openNewsButton->rebuild()->label("🔗 Right away!")->commence();
 
-                             CProcess proc("xdg-open", {"https://hypr.land/news"});
+                             CProcess proc("xdg-open", {"https://github.com/AbyssWM"});
                              proc.runAsync();
                          })
                          ->size({CDynamicSize::HT_SIZE_AUTO, CDynamicSize::HT_SIZE_AUTO, {1, 1}})

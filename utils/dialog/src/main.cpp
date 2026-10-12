@@ -1,25 +1,25 @@
-#include <hyprtoolkit/core/Backend.hpp>
-#include <hyprtoolkit/window/Window.hpp>
-#include <hyprtoolkit/element/Rectangle.hpp>
-#include <hyprtoolkit/element/RowLayout.hpp>
-#include <hyprtoolkit/element/ColumnLayout.hpp>
-#include <hyprtoolkit/element/Text.hpp>
-#include <hyprtoolkit/element/Image.hpp>
-#include <hyprtoolkit/element/Button.hpp>
-#include <hyprtoolkit/element/Null.hpp>
+#include <abysstoolkit/core/Backend.hpp>
+#include <abysstoolkit/window/Window.hpp>
+#include <abysstoolkit/element/Rectangle.hpp>
+#include <abysstoolkit/element/RowLayout.hpp>
+#include <abysstoolkit/element/ColumnLayout.hpp>
+#include <abysstoolkit/element/Text.hpp>
+#include <abysstoolkit/element/Image.hpp>
+#include <abysstoolkit/element/Button.hpp>
+#include <abysstoolkit/element/Null.hpp>
 
-#include <hyprutils/memory/SharedPtr.hpp>
-#include <hyprutils/memory/UniquePtr.hpp>
-#include <hyprutils/string/ConstVarList.hpp>
-#include <hyprutils/string/String.hpp>
+#include <abyssutils/memory/SharedPtr.hpp>
+#include <abyssutils/memory/UniquePtr.hpp>
+#include <abyssutils/string/ConstVarList.hpp>
+#include <abyssutils/string/String.hpp>
 
 #include <print>
 #include <algorithm>
 
-using namespace Hyprutils::Memory;
-using namespace Hyprutils::Math;
-using namespace Hyprutils::String;
-using namespace Hyprtoolkit;
+using namespace Abyssutils::Memory;
+using namespace Abyssutils::Math;
+using namespace Abyssutils::String;
+using namespace Abysstoolkit;
 
 #define SP CSharedPointer
 #define WP CWeakPointer
@@ -89,7 +89,7 @@ int main(int argc, char** argv, char** envp) {
         }
 
         if (arg == "--help" || arg == "-h") {
-            std::println(R"#(hyprland-dialog, part of hyprland-guiutils v{}
+            std::println(R"#(abyss-dialog, part of abyss-guiutils v{}
 Usage:
 --title                                 - Set window title
 --apptitle                              - Set big title
@@ -122,14 +122,14 @@ Usage:
 
     layout->addChild(layoutInner);
     layoutInner->setGrow(true);
-    layoutInner->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
-    layoutInner->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
+    layoutInner->setPositionMode(Abysstoolkit::IElement::HT_POSITION_ABSOLUTE);
+    layoutInner->setPositionFlag(Abysstoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
 
     auto title =
         CTextBuilder::begin()->text(std::move(titleStr))->fontSize({CFontSize::HT_FONT_H2})->async(false)->color([] { return backend->getPalette()->m_colors.text; })->commence();
 
     auto hr = CRectangleBuilder::begin() //
-                  ->color([] { return CHyprColor{backend->getPalette()->m_colors.text.darken(0.65)}; })
+                  ->color([] { return CAbyssColor{backend->getPalette()->m_colors.text.darken(0.65)}; })
                   ->size({CDynamicSize::HT_SIZE_PERCENT, CDynamicSize::HT_SIZE_ABSOLUTE, {0.5F, 9.F}})
                   ->commence();
 
@@ -192,7 +192,7 @@ Usage:
                  ->minSize({WINDOW_X, WINDOW_Y})
                  ->maxSize({WINDOW_X, WINDOW_Y})
                  ->appTitle(std::move(appTitle))
-                 ->appClass("hyprland-dialog")
+                 ->appClass("abyss-dialog")
                  ->commence();
 
     window->m_rootElement->addChild(CRectangleBuilder::begin()->color([] { return backend->getPalette()->m_colors.background; })->commence());

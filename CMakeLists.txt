@@ -4,13 +4,13 @@ file(READ "${CMAKE_SOURCE_DIR}/VERSION" VER_RAW)
 string(STRIP ${VER_RAW} VERSION)
 
 project(
-  hyprland-guiutils
-  DESCRIPTION "Hyprland GUI utilities"
+  abyss-guiutils
+  DESCRIPTION "Abyssland GUI utilities"
   VERSION ${VERSION})
 
 set(CMAKE_MESSAGE_LOG_LEVEL "STATUS")
 
-message(STATUS "Configuring hyprland-guiutils!")
+message(STATUS "Configuring abyss-guiutils!")
 
 # Get git info hash and branch
 execute_process(
@@ -58,9 +58,9 @@ pkg_check_modules(
   deps
   REQUIRED
   IMPORTED_TARGET
-  hyprlang>=0.6.0
-  hyprutils>=0.10.2
-  hyprtoolkit>=0.4.0
+  abyssparse>=0.6.0
+  abyssutils>=0.10.2
+  abysstoolkit>=0.4.0
   pixman-1
   xkbcommon
   libdrm)
