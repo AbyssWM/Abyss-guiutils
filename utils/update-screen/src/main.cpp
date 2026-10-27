@@ -60,7 +60,7 @@ int main(int argc, char** argv, char** envp) {
         }
 
         if (arg == "--help" || arg == "-h") {
-            std::println(R"#(abyssland-update-screen, part of abyss-guiutils v{}
+            std::println(R"#(abyss-update-screen, part of abyss-guiutils v{}
 Usage:
 --new-version                           - Set the displayed new version string
 )#",
@@ -84,7 +84,7 @@ Usage:
                             ->minSize(WINDOW_SIZE)
                             ->maxSize(WINDOW_SIZE)
                             ->appTitle("Abyssland Updated")
-                            ->appClass("abyssland-donate-screen")
+                            ->appClass("abyssland-update-screen")
                             ->commence();
 
     window->m_rootElement->addChild(CRectangleBuilder::begin()->color([] { return backend->getPalette()->m_colors.background; })->commence());

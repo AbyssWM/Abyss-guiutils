@@ -75,15 +75,16 @@ This list refreshes automatically.</i>)#";
 
 constexpr const char* TAB4_CONTENT =
     R"#(Now that you've installed the basic apps, you might want some of them to autostart. Abyssland doesn't automatically start anything for you, you need to tell it to.
-Go to ~/.config/abyss/abyssland.lua, and add "hl.exec_cmd("appname")" surrounded by hl.on() to launch your apps, for example:
-hl.on("abyssland.start", function ()
-    hl.exec_cmd("abysspaper")
-    hl.exec_cmd("waybar")
-end)
+Open ~/.config/abyss/config.hpp and add an onStart callback to launch your apps, for example:
+c.onStart([] {
+    exec("abysspaper");
+    exec("waybar");
+});
+The config is C++ compiled into Abyssland: run <i>abyssctl reload</i> after every change.
 
 In general, configuring apps is something for you to do. Each app you install may come with its own config file and options.
 
-A great point to start is the Abyssland wiki at https://github.com/AbyssWM/Abyssland There, the master tutorial will teach you everything and link to further docs.
+A great point to start is the Abyssland wiki at https://abysswm.github.io/wiki/getting-started There, the getting started guide will teach you the basics and link to further docs.
 
 If you prefer pre-configured settings, or "dotfiles", you can see the "preconfigured configs" section on the wiki, or search online. <span foreground="#cc2222">Important note:</span> dotfiles can run <i>anything</i> on your computer. Make sure you trust the source.)#";
 
@@ -113,7 +114,7 @@ Here are some important default shortcuts:
 • SUPER + SHIFT + [1 - 9] <span foreground="#666666">=</span> Move window to workspace 1 - 9
 • SUPER + Arrows <span foreground="#666666">=</span> Move focus around
 
-<i>You can easily change these in your abyssland.lua.</i>
+<i>You can easily change these in your config.hpp (then run abyssctl reload).</i>
     
 Thank you for choosing Abyssland! ❤️)#";
 
@@ -326,21 +327,22 @@ static std::optional<std::string> readFileAsString(const std::string& path) {
     return std::string((std::istreambuf_iterator<char>(file)), (std::istreambuf_iterator<char>()));
 }
 
-static std::optional<std::filesystem::path> getAbysslandLuaConfigPath() {
+// the user's config.hpp, copied from Abyssland's config.def.hpp
+static std::optional<std::filesystem::path> getAbysslandConfigPath() {
     if (const auto XDG_CONFIG_HOME = getenv("XDG_CONFIG_HOME"); XDG_CONFIG_HOME && XDG_CONFIG_HOME[0] != '\0')
-        return std::filesystem::path{XDG_CONFIG_HOME} / "abyss" / "abyssland.lua";
+        return std::filesystem::path{XDG_CONFIG_HOME} / "abyss" / "config.hpp";
 
     if (const auto HOME = getenv("HOME"); HOME && HOME[0] != '\0')
-        return std::filesystem::path{HOME} / ".config" / "abyss" / "abyssland.lua";
+        return std::filesystem::path{HOME} / ".config" / "abyss" / "config.hpp";
 
     return std::nullopt;
 }
 
-static bool isLuaWhitespace(char c) {
+static bool isCppWhitespace(char c) {
     return c == ' ' || c == '\t' || c == '\r';
 }
 
-static std::string luaQuotedString(const std::string_view& str) {
+static std::string cppQuotedString(const std::string_view& str) {
     std::string result = "\"";
     result.reserve(str.length() + 2);
 
@@ -349,7 +351,6 @@ static std::string luaQuotedString(const std::string_view& str) {
             case '\\': result += "\\\\"; break;
             case '"': result += "\\\""; break;
             case '\n': result += "\\n"; break;
-            case '\r': result += "\\r"; break;
             case '\t': result += "\\t"; break;
             default: result += c; break;
         }
@@ -359,35 +360,29 @@ static std::string luaQuotedString(const std::string_view& str) {
     return result;
 }
 
-static std::optional<std::pair<size_t, size_t>> findLuaLocalLine(const std::string& config, const std::string_view& var) {
+// the line "const std::string <var> = ...;" of the default config
+static std::optional<std::pair<size_t, size_t>> findDefaultVarLine(const std::string& config, const std::string_view& var) {
     for (size_t lineStart = 0; lineStart <= config.length();) {
         size_t lineEnd = config.find('\n', lineStart);
         if (lineEnd == std::string::npos)
             lineEnd = config.length();
 
-        const std::string_view line{config.data() + lineStart, lineEnd - lineStart};
+        std::string_view line{config.data() + lineStart, lineEnd - lineStart};
+        while (!line.empty() && isCppWhitespace(line.front()))
+            line.remove_prefix(1);
 
-        size_t pos = 0;
-        while (pos < line.length() && isLuaWhitespace(line[pos])) {
-            pos++;
-        }
+        if (line.starts_with("const std::string")) {
+            line.remove_prefix(17);
+            if (!line.empty() && isCppWhitespace(line.front())) {
+                while (!line.empty() && isCppWhitespace(line.front()))
+                    line.remove_prefix(1);
 
-        if (line.substr(pos).starts_with("local")) {
-            pos += 5;
+                if (line.starts_with(var)) {
+                    line.remove_prefix(var.length());
+                    while (!line.empty() && isCppWhitespace(line.front()))
+                        line.remove_prefix(1);
 
-            if (pos < line.length() && isLuaWhitespace(line[pos])) {
-                while (pos < line.length() && isLuaWhitespace(line[pos])) {
-                    pos++;
-                }
-
-                if (line.substr(pos, var.length()) == var) {
-                    pos += var.length();
-
-                    while (pos < line.length() && isLuaWhitespace(line[pos])) {
-                        pos++;
-                    }
-
-                    if (pos < line.length() && line[pos] == '=')
+                    if (line.starts_with('='))
                         return std::pair<size_t, size_t>{lineStart, lineEnd};
                 }
             }
@@ -402,102 +397,40 @@ static std::optional<std::pair<size_t, size_t>> findLuaLocalLine(const std::stri
     return std::nullopt;
 }
 
-static std::string luaLocalLineReplacement(const std::string& config, const std::pair<size_t, size_t>& line, const std::string_view& var, const char* newValue) {
-    size_t firstNonWhitespace = line.first;
-    while (firstNonWhitespace < line.second && isLuaWhitespace(config[firstNonWhitespace])) {
-        firstNonWhitespace++;
-    }
-
-    return std::format("{}local {} = {}", config.substr(line.first, firstNonWhitespace - line.first), var, luaQuotedString(newValue));
-}
-
-static bool isLuaAutogeneratedLine(const std::string_view& line) {
-    const auto COMMENT_POS = line.find("--");
-    const auto CODE        = line.substr(0, COMMENT_POS);
-
-    std::string compact;
-    compact.reserve(CODE.length());
-
-    for (const auto c : CODE) {
-        if (!isLuaWhitespace(c))
-            compact += c;
-    }
-
-    return compact == "hl.config({autogenerated=true})" || compact == "hl.config({autogenerated=1})";
-}
-
-static std::optional<std::pair<size_t, size_t>> findLuaAutogeneratedLine(const std::string& config) {
-    for (size_t lineStart = 0; lineStart <= config.length();) {
-        size_t lineEnd = config.find('\n', lineStart);
-        if (lineEnd == std::string::npos)
-            lineEnd = config.length();
-
-        if (isLuaAutogeneratedLine({config.data() + lineStart, lineEnd - lineStart})) {
-            const size_t removeEnd = lineEnd == config.length() ? lineEnd : lineEnd + 1;
-            return std::pair<size_t, size_t>{lineStart, removeEnd};
-        }
-
-        if (lineEnd == config.length())
-            break;
-
-        lineStart = lineEnd + 1;
-    }
-
-    return std::nullopt;
-}
-
 static std::optional<std::string> updateDefaultConfigVar(const std::string_view& var, const char* newValue) {
-    const auto PATH = getAbysslandLuaConfigPath();
+    const auto PATH = getAbysslandConfigPath();
     if (!PATH)
         return "Can't save: neither $XDG_CONFIG_HOME nor $HOME env is set";
 
     const auto STR = readFileAsString(PATH->string());
 
     if (!STR)
-        return "Can't save: failed to read Lua config";
+        return "Can't save: no ~/.config/abyss/config.hpp";
 
     std::string newConfig = *STR;
 
-    const auto VAR_LINE = findLuaLocalLine(newConfig, var);
+    const auto  VAR_LINE = findDefaultVarLine(newConfig, var);
     if (!VAR_LINE)
-        return "Can't save: config isn't default, doesn't have Lua default variable";
+        return std::format("Can't save: config.hpp has no \"const std::string {} = ...;\" line", var);
 
-    newConfig.replace(VAR_LINE->first, VAR_LINE->second - VAR_LINE->first, luaLocalLineReplacement(newConfig, *VAR_LINE, var, newValue));
+    size_t indentEnd = VAR_LINE->first;
+    while (indentEnd < VAR_LINE->second && isCppWhitespace(newConfig[indentEnd]))
+        indentEnd++;
+
+    newConfig.replace(VAR_LINE->first, VAR_LINE->second - VAR_LINE->first,
+                      std::format("{}const std::string {} = {};", newConfig.substr(VAR_LINE->first, indentEnd - VAR_LINE->first), var, cppQuotedString(newValue)));
 
     std::ofstream ofs(*PATH, std::ios::trunc);
     if (!ofs.good())
-        return "Can't save: failed to open Lua config";
+        return "Can't save: failed to open config.hpp";
 
     ofs << newConfig;
     ofs.close();
 
     if (ofs.fail())
-        return "Can't save: failed to write Lua config";
+        return "Can't save: failed to write config.hpp";
 
     return std::nullopt;
-}
-
-static void removeAutogen() {
-    const auto PATH = getAbysslandLuaConfigPath();
-    if (!PATH)
-        return;
-
-    const auto STR = readFileAsString(PATH->string());
-
-    if (!STR)
-        return;
-
-    std::string newConfig = *STR;
-
-    const auto AUTOGEN_LINE = findLuaAutogeneratedLine(newConfig);
-    if (!AUTOGEN_LINE)
-        return;
-
-    newConfig.erase(AUTOGEN_LINE->first, AUTOGEN_LINE->second - AUTOGEN_LINE->first);
-
-    std::ofstream ofs(*PATH, std::ios::trunc);
-    ofs << newConfig;
-    ofs.close();
 }
 
 static void initTabs() {
@@ -651,7 +584,7 @@ static void initTabs() {
         layout->addChild(defaultContainer);
         layout->addChild(hr);
         layout->addChild(CTextBuilder::begin()
-                             ->text("<i>You can always change these later in your abyssland.lua</i>")
+                             ->text("<i>Saved to your config.hpp, active after abyssctl reload</i>")
                              ->color([] { return state.backend->getPalette()->m_colors.text; })
                              ->commence());
         layout->addChild(spacer);
@@ -795,7 +728,6 @@ int main(int argc, char** argv, char** envp) {
     state.buttonFinish     = CButtonBuilder::begin()
                                  ->label("Finish")
                                  ->onMainClick([w = WP<IWindow>{window}](SP<CButtonElement> self) {
-                                 removeAutogen();
                                  if (w)
                                      w->close();
                                  state.backend->destroy();
